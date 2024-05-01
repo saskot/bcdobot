@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="wenglor_driver" type="pointcloud_zber" name="pointcloud_zber" output="screen"/>
+</launch>

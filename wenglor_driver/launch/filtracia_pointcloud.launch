@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="wenglor_driver" type="filtracia_pointcloud" name="filtracia_pointcloud" output="screen"/>
+</launch>

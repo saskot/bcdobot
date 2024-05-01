@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="wenglor_driver" type="zber_image" name="zber_image" output="screen"/>
+</launch>
