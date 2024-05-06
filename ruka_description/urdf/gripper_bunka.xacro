@@ -9,10 +9,5 @@
     <xacro:include filename="$(find ruka_description)/urdf/gripper_macro.xacro"/>
     <xacro:gripper_macro prefix=""/>
 
-    <joint name="dobot_gripper_joint" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0" />
-        <parent link="Link6" />
-        <child  link="gripper" /> <!--gripper-->
-    </joint>  
 
 </robot>

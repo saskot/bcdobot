@@ -18,7 +18,7 @@
     This corresponds to moving around the real robot without the use of MoveIt.
     -->
     <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
-    <include file="$(find ruka_config)/launch/planning_context.launch">
+    <include file="$(find ruka_config_novy)/launch/planning_context.launch">
         <arg name="load_robot_description" value="true"/>
     </include>
 
@@ -29,7 +29,7 @@
           output="screen"/>
 
     <!-- Run the main MoveIt! executable without trajectory execution (we do not have controllers configured by default) TU JE TO CO SI MENIL KONFIGUROVANE-->
-    <include file="$(find ruka_config)/launch/move_group.launch">
+    <include file="$(find ruka_config_novy)/launch/move_group.launch">
 
         <arg name="publish_monitored_planning_scene" value="true" />
 
@@ -41,7 +41,7 @@
     </include>
 
     <!-- Run Rviz and load the default config to see the state of the move_group node -->
-    <include file="$(find ruka_config)/launch/moveit_rviz.launch">
+    <include file="$(find ruka_config_novy)/launch/moveit_rviz.launch">
         <!--<arg name="config" value="true"/>-->
         <arg name="debug" value="$(arg debug)"/>
     </include>

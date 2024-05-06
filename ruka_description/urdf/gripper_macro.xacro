@@ -1,7 +1,15 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+
     <xacro:macro name="gripper_macro" params="prefix">
+
+    <joint name="dobot_gripper_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="Link6" />
+        <child  link="gripper" /> <!--gripper-->
+    </joint>  
+
         <link name="${prefix}gripper">
           <inertial>
               <origin
@@ -36,6 +44,13 @@
               </geometry>
           </collision>
       </link>
+
+    <joint name="tcp_joint" type="fixed">
+        <origin xyz="0 0.2 0.2" rpy="0 0 0" />
+        <parent link="gripper" />
+        <child  link="tcp" /> <!--gripper -->
+    </joint>  
+    <link name="tcp"/>
 
 
         <!-- Add joints, inertial properties, etc. as needed -->
