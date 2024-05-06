@@ -42,99 +42,94 @@ typedef pcl::PointCloud<PointT> PointCloudT;
 
 float nx, ny, nz; // Normal vector
 
+std::string world_frame = "base_link";  // Set to your frame ID
+ros::Publisher cloud_pub;
+
+
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "basic_shapes");
+  ros::init(argc, argv, "basic_shapes, pcl_to_ros");
   ros::NodeHandle n;
   ros::Rate r(1);
 
-  // Create a publisher for the visualization marker
+  cloud_pub = n.advertise<sensor_msgs::PointCloud2>("output_cloud", 1);
+
+
   ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
 
-  ros::Publisher point_pub_msgs = n.advertise<wenglor_driver::point_array>("object_pose", 1);
+  ros::Publisher point_pub_msgs = n.advertise<geometry_msgs::Point>("object_pose", 1);
 
   pcl::PCDWriter writer;
 
-  // Read the initial point cloud
-  pcl::PCLPointCloud2::Ptr cloud(new pcl::PCLPointCloud2());
+// Read the initial point cloud
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
   pcl::PCDReader reader;
-  reader.read("sken_rovna_plocha.pcd", *cloud);
-
-  // Step 1: Voxel Grid Downsampling
-  pcl::PCLPointCloud2::Ptr cloud_downsampled(new pcl::PCLPointCloud2());
-  pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
-  sor.setInputCloud(cloud);
-  sor.setLeafSize(2.0f, 2.0f, 2.0f); // 0.01 je 1 cm
-  sor.filter(*cloud_downsampled);
-  pcl::PCDWriter writer1;
-  writer1.write("sken_rovna_plocha_downsampled_0_0_1.pcd", *cloud_downsampled, Eigen::Vector4f::Zero(), Eigen::Quaternionf::Identity(), false);
-
-  // std::vector<int> mapping;
-  // pcl::removeNaNFromPointCloud(*cloud_downsampled, *cloud_downsampled, mapping);
-
-  // // Step 2: Statistical Outlier Removal
-  // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
-  // pcl::fromPCLPointCloud2(*cloud_downsampled, *cloud_filtered);
-  // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_inliers(new pcl::PointCloud<pcl::PointXYZ>);
-  // pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor2;
-  // sor2.setInputCloud(cloud_filtered);
-  // sor2.setMeanK(50);
-  // sor2.setStddevMulThresh(1.0);
-  // sor2.filter(*cloud_inliers);
-  // pcl::PCDWriter writer2;
-  // writer2.write<pcl::PointXYZ>("test_pcd_downsampled_inliers.pcd", *cloud_inliers, false);
-
-  // Step 3: Region Growing Segmentation
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_region_growing(new pcl::PointCloud<pcl::PointXYZ>);
-  if (pcl::io::loadPCDFile<pcl::PointXYZ>("sken_rovna_plocha_downsampled_0_0_1.pcd", *cloud_region_growing) == -1) // test_pcd_downsampled_inliers.pcd
-  {
-    std::cout << "Cloud reading failed." << std::endl;
+  if (reader.read("sken_rovna_plocha.pcd", *cloud) == -1) {
+    ROS_ERROR("Could not read file sken_rovna_plocha.pcd");
     return (-1);
   }
 
-  // crop
-  pcl::PassThrough<pcl::PointXYZ> pass;
-  pass.setInputCloud(cloud_region_growing);
-  pass.setFilterFieldName("x");
-  pass.setFilterLimits(/* min_x */ -550, /* max_x */ 250);
-  pass.filter(*cloud_region_growing); // Crop along x-axis
-  pass.setInputCloud(cloud_region_growing);
-  pass.setFilterFieldName("y");
-  pass.setFilterLimits(/* min_y */ -40, /* max_y */ 150);
-  pass.filter(*cloud_region_growing); // Crop along y-axis
-  pass.setInputCloud(cloud_region_growing);
-  pass.setFilterFieldName("z");
-  pass.setFilterLimits(/* min_z */ 2000, /* max_z */ 2142); // Adjust as needed
-  pass.filter(*cloud_region_growing);                       // Crop along z-axis
-  writer.write<pcl::PointXYZ>("sken_rovna_plocha_cropped250_250_10000.pcd", *cloud_region_growing, false);
+  std::vector<int> indices;
+  pcl::removeNaNFromPointCloud(*cloud, *cloud, indices);
 
-  // normal estimation
+  // Crop filter to isolate region of interest
+  pcl::PassThrough<pcl::PointXYZ> pass;
+  pass.setInputCloud(cloud);
+  pass.setFilterFieldName("x");
+  pass.setFilterLimits(-550, 250);
+  pass.filter(*cloud);
+  writer.write<pcl::PointXYZ>("cropped_x.pcd", *cloud, false);
+  pass.setFilterFieldName("y");
+  pass.setFilterLimits(-40, 150);
+  pass.filter(*cloud);
+  writer.write<pcl::PointXYZ>("cropped_xy.pcd", *cloud, false);
+  pass.setFilterFieldName("z");
+  pass.setFilterLimits(2000, 2142);
+  pass.filter(*cloud);
+  writer.write<pcl::PointXYZ>("cropped_xyz.pcd", *cloud, false);
+
+  // Voxel Grid Downsampling
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_downsampled(new pcl::PointCloud<pcl::PointXYZ>());
+  pcl::VoxelGrid<pcl::PointXYZ> sor;
+  sor.setInputCloud(cloud);
+  sor.setLeafSize(2.0f, 2.0f, 2.0f);
+  sor.filter(*cloud_downsampled);
+  writer.write<pcl::PointXYZ>("downsampled.pcd", *cloud_downsampled, false);
+
+  //Send pointcloud to rviz not viable
+    // sensor_msgs::PointCloud2 output;
+    // pcl::toROSMsg(*cloud_downsampled, output);
+    // output.header.frame_id = "base_link";
+
+    // ros::Rate loop_rate(1);
+    // while (ros::ok()) {
+    //     cloud_pub.publish(output);
+    //     ros::spinOnce();
+    //     loop_rate.sleep();
+    // }
+
+
+
+  // Normal estimation
   pcl::search::Search<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
   pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
   pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normal_estimator;
   normal_estimator.setSearchMethod(tree);
-  normal_estimator.setInputCloud(cloud_region_growing);
-
-  normal_estimator.setKSearch(110);
+  normal_estimator.setInputCloud(cloud_downsampled);
+  normal_estimator.setKSearch(50);
   normal_estimator.compute(*normals);
 
-  pcl::IndicesPtr indices(new std::vector<int>);
-  pcl::removeNaNFromPointCloud(*cloud_region_growing, *indices);
-
-  // region grow segmentation
+  // Region growing segmentation
   pcl::RegionGrowing<pcl::PointXYZ, pcl::Normal> reg;
-  reg.setMinClusterSize(700); // 50
+  reg.setMinClusterSize(700);
   reg.setMaxClusterSize(18000);
   reg.setSearchMethod(tree);
-
-  // reg.setDistanceThreshold(10);s
-
-  reg.setNumberOfNeighbours(50); // 70
-  reg.setInputCloud(cloud_region_growing);
-  reg.setIndices(indices);
+  reg.setNumberOfNeighbours(120);
+  reg.setInputCloud(cloud_downsampled);
   reg.setInputNormals(normals);
   reg.setSmoothnessThreshold(2.0 / 180.0 * M_PI);
-  reg.setCurvatureThreshold(2.5); // 1.0000000000000 bolo
+  reg.setCurvatureThreshold(2.5);
+
 
   std::vector<pcl::PointIndices> clusters;
   reg.extract(clusters);
@@ -154,14 +149,13 @@ int main(int argc, char **argv)
     int max_z_coordinate_object_index = 0;
     float max_z_coordinate = 0;
 
-    wenglor_driver::point_array poloha;
 
     for (std::vector<pcl::PointIndices>::const_iterator i = clusters.begin(); i != clusters.end(); ++i)
     {
       std::cout << "Processing cluster n." << currentClusterNum << "..." << std::endl;
       PointCloudT::Ptr cluster(new PointCloudT);
       for (std::vector<int>::const_iterator point = i->indices.begin(); point != i->indices.end(); point++)
-        cluster->points.push_back(cloud_region_growing->points[*point]); // cloud_filtered
+        cluster->points.push_back(cloud_downsampled->points[*point]); // cloud_region_growing
       cluster->width = cluster->points.size();
       cluster->height = 1;
       cluster->is_dense = true;
@@ -170,7 +164,7 @@ int main(int argc, char **argv)
       PointCloudT::Ptr cluster_plane_raw(new PointCloudT);
 
       // plane model segmentation
-      //-------------------------------------
+
       pcl::SACSegmentation<PointT> seg;
       pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
       pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
@@ -179,11 +173,11 @@ int main(int argc, char **argv)
       seg.setModelType(pcl::SACMODEL_PLANE);
       seg.setMethodType(pcl::SAC_RANSAC);
       // seg.setMaxIterations(100); //plane_max_iter
-      seg.setDistanceThreshold(0.005); // plane_dist_thresh 0.02
+      seg.setDistanceThreshold(0.005); //  0.02
 
       seg.setInputCloud(cluster);
       seg.segment(*inliers, *coefficients);
-      // plane model
+ 
 
       // Segment the largest planar komponent from cluster
       seg.setInputCloud(cluster);
@@ -204,13 +198,13 @@ int main(int argc, char **argv)
       PointCloudT::Ptr cluster_plane(new PointCloudT);
       pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
       sor.setInputCloud(cluster_plane_raw);
-      sor.setMeanK(100);
-      sor.setStddevMulThresh(0.5);
+      sor.setMeanK(50); //100
+      sor.setStddevMulThresh(1.0); //0.5
       sor.filter(*cluster_plane);
       pcl::PCDWriter writer;
       writer.write<pcl::PointXYZ>("statistic.pcd", *cluster_plane, false);
 
-      // statistical
+      //convex hull
 
       PointCloudT::Ptr convexHull(new PointCloudT);
       pcl::ConvexHull<pcl::PointXYZ> hull;
@@ -231,7 +225,7 @@ int main(int argc, char **argv)
       Eigen::Vector4f object_centroid;
       pcl::compute3DCentroid(*cluster_plane, object_centroid);
 
-      // Detect and save the index of highest "z" centroid coordinate
+      //  highest "z" centroid coordinate
       if (object_centroid[2] > max_z_coordinate)
       {
         max_z_coordinate = object_centroid[2];
@@ -326,24 +320,16 @@ int main(int argc, char **argv)
 
       marker.lifetime = ros::Duration();
 
-      //  ros::Publisher point_pub_msgs = n.advertise<wenglor_driver::point_array>("object_pose", 1);
-      //   while(marker_pub.getNumSubscribers() < 1)
-      //   {
-      //     if(!ros::ok())
-      //     {
-      //         return 0;
-      //     }
-      //     ROS_WARN_ONCE("vytvor subscribera");
-      //     sleep(1);
-      //   }
-
       marker_pub.publish(marker);
-      poloha.point[currentClusterNum].x = object_centroid[0];
-      poloha.point[currentClusterNum].y = object_centroid[1];
-      poloha.point[currentClusterNum].z = object_centroid[2];
+
 
       currentClusterNum++;
     }
+      geometry_msgs::Point poloha;
+      poloha.x = object_poses[max_z_coordinate_object_index].position.x;
+      poloha.y = object_poses[max_z_coordinate_object_index].position.y;
+      poloha.z = object_poses[max_z_coordinate_object_index].position.z;
+    ROS_INFO_STREAM("publishhnute");
     point_pub_msgs.publish(poloha);
   }
 
