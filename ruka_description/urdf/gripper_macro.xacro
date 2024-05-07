@@ -4,12 +4,6 @@
 
     <xacro:macro name="gripper_macro" params="prefix">
 
-    <joint name="dobot_gripper_joint" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0" />
-        <parent link="Link6" />
-        <child  link="gripper" /> <!--gripper-->
-    </joint>  
-
         <link name="${prefix}gripper">
           <inertial>
               <origin
@@ -45,15 +39,23 @@
           </collision>
       </link>
 
-    <joint name="tcp_joint" type="fixed">
-        <origin xyz="0 0.2 0.2" rpy="0 0 0" />
-        <parent link="gripper" />
-        <child  link="tcp" /> <!--gripper -->
-    </joint>  
-    <link name="tcp"/>
+    <joint name="dobot_gripper_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="Link6"/>
+        <child link="gripper"/>
+    </joint>
 
+<joint name="tcp_joint" type="fixed">
+    <origin xyz="-0.105 0 0.065" rpy="0 3.1416 1.5708" /> 
+    <parent link="gripper" />
+    <child link="tcp" />
+</joint>
+<link name="tcp"/>
 
-        <!-- Add joints, inertial properties, etc. as needed -->
+        <!--90 degrees: rpy="0 0 1.5708"
+180 degrees: rpy="0 0 3.1416"
+270 degrees: rpy="0 0 4.7124"
+360 degrees: rpy="0 0 6.2832 Add joints, inertial properties, etc. as needed -->
 
   </xacro:macro>
 </robot>
