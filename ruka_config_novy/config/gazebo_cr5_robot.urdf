@@ -219,12 +219,6 @@
         <axis xyz="0 0 1" />
         <limit effort="0" lower="-6.28" upper="6.28" velocity="0" />
     </joint>
-    <joint name="dobot_gripper_joint" type="fixed">
-        <origin rpy="0 0 0" xyz="0 0 0" />
-        <parent link="Link6" />
-        <child link="gripper" />
-        <!--gripper-->
-    </joint>
     <link name="gripper">
         <inertial>
             <origin rpy="0 0 0" xyz="0 0 0" />
@@ -247,14 +241,21 @@
             </geometry>
         </collision>
     </link>
-    <joint name="tcp_joint" type="fixed">
+    <joint name="dobot_gripper_joint" type="fixed">
         <origin rpy="0 0 0" xyz="0 0 0" />
+        <parent link="Link6" />
+        <child link="gripper" />
+    </joint>
+    <joint name="tcp_joint" type="fixed">
+        <origin rpy="0 3.1416 1.5708" xyz="-0.105 0 0.065" />
         <parent link="gripper" />
         <child link="tcp" />
-        <!--gripper-->
     </joint>
     <link name="tcp" />
-    <!-- Add joints, inertial properties, etc. as needed -->
+    <!--90 degrees: rpy="0 0 1.5708"
+180 degrees: rpy="0 0 3.1416"
+270 degrees: rpy="0 0 4.7124"
+360 degrees: rpy="0 0 6.2832 Add joints, inertial properties, etc. as needed -->
     <transmission name="trans_joint1">
         <type>transmission_interface/SimpleTransmission</type>
         <joint name="joint1">

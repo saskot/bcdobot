@@ -1,0 +1,4 @@
+<launch>
+  <!-- Run the posli_ruku_niekde node -->
+  <node pkg="ruka_goal" type="test_goal" name="test_node" output="screen"/>
+</launch>
