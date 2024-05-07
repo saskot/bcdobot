@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: ruka_description
+    relative_path: urdf/bunka.urdf
+    xacro_args: ""
+  SRDF:
+    relative_path: config/cr5_robot.srdf
+  CONFIG:
+    author_name: alex
+    author_email: alex@alex.sk
+    generated_timestamp: 1715115622

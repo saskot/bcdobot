@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
 <launch>
 
-
-
     <!-- By default, we do not start a database (it can be large) -->
     <arg name="db" default="false"/>
     <!-- Allow user to specify database location 
@@ -36,7 +34,7 @@
         <arg name="publish_monitored_planning_scene" value="true" />
 
         <arg name="allow_trajectory_execution" value="true"/>
-        <!-- <arg name="fake_execution" value="false"/> -->
+        <!--<arg name="fake_execution" value="false"/>-->
         <arg name="info" value="true"/>
         <arg name="debug" value="$(arg debug)"/>
         <!--<arg name="real_robot" value="false"/>-->
@@ -44,7 +42,7 @@
 
     <!-- Run Rviz and load the default config to see the state of the move_group node -->
     <include file="$(find ruka_config_novy)/launch/moveit_rviz.launch">
-        <arg name="rviz_config" value="$(find ruka_config_novy)/launch/moveit.rviz"/>
+        <!--<arg name="config" value="true"/>-->
         <arg name="debug" value="$(arg debug)"/>
     </include>
 

@@ -48,7 +48,7 @@ catkin_package(
 )
 
 add_executable(posli_ruku_niekde /home/alex/catkin_ws/src/ruka_goal/src/posli_ruku_niekde.cpp)
-add_executable(test_goal /home/alex/catkin_ws/src/ruka_goal/src/test_goal.cpp)
+
 #add_library(posli_ruku_niekde_lib src/scripts/posli_ruku_niekde.cpp)
 #target_link_libraries(posli_ruku_niekde_lib ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
@@ -65,15 +65,3 @@ target_link_libraries(posli_ruku_niekde
                       ${moveit_ros_planning_interface}
                       ${moveit_planning_scene_interface}
                       )
-                      
-                      target_link_libraries(test_goal
-                      ${catkin_LIBRARIES}
-                      ${Boost_LIBRARIES}
-                      ${EIGEN3_INCLUDE_DIRS}
-                      ${moveit_visual_tools_LIBRARIES}
-                      ${GAZEBO_LIBRARIES}
-                      #${}
-                      ${moveit_ros_planning_interface}
-                      ${moveit_planning_scene_interface}
-                      )
-

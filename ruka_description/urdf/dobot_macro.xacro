@@ -242,7 +242,7 @@
                     <mesh filename="package://ruka_description/meshes/cr5/Link6.dae" />  <!--TODO "package://dobot_description/meshes/cr5/Link6.dae"-->
                 </geometry>
                 <material name="">
-                    <color rgba="1 1 1 1" />
+                    <color rgba="0 0 1 1" />
                 </material>
             </visual>
             <collision>
