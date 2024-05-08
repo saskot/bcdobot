@@ -5,7 +5,7 @@
   <!-- The name of the parameter under which the URDF is loaded -->
   <arg name="robot_description" default="robot_description"/>
 
-  <!-- Load universal robot description format (URDF) -->
+  <!-- Load universal robot description format (URDF)textfile="$(find ruka_description)/urdf/bunka.urdf -->
   <param if="$(arg load_robot_description)" name="$(arg robot_description)" textfile="$(find ruka_description)/urdf/bunka.urdf"/>
 
   <!-- The semantic description that corresponds to the URDF -->
@@ -14,7 +14,7 @@
   <!-- Load updated joint limits (override information from URDF) -->
   <group ns="$(arg robot_description)_planning">
     <rosparam command="load" file="$(find ruka_moveit_config)/config/joint_limits.yaml"/>
-    <rosparam command="load" file="$(find ruka_moveit_config)/config/cartesian_limits.yaml"/>
+    <!-- <rosparam command="load" file="$(find ruka_moveit_config)/config/cartesian_limits.yaml"/> -->
   </group>
 
   <!-- Load default settings for kinematics; these settings are overridden by settings in a node's namespace -->

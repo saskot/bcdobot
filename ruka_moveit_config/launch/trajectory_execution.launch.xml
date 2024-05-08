@@ -2,7 +2,7 @@
   <!-- This file summarizes all settings required for trajectory execution  -->
 
   <!-- Define moveit controller manager plugin: fake, simple, or ros_control -->
-  <arg name="moveit_controller_manager" />
+  <!-- <arg name="moveit_controller_manager" /> -->
   <arg name="fake_execution_type" default="interpolate" />
 
   <!-- Flag indicating whether MoveIt is allowed to load/unload  or switch controllers -->
@@ -20,7 +20,7 @@
        As real-robot controller_manager.launch files shouldn't be required to define this argument, we use the trick of passing all args. -->
   <!-- <include file="$(dirname)/$(arg moveit_controller_manager)_moveit_controller_manager.launch.xml" pass_all_args="true" /> -->
   <!-- Load the robot specific controller manager; this sets the moveit_controller_manager ROS parameter -->
-  <arg name="moveit_controller_manager" default="cr5_robot" />
+  <arg name="moveit_controller_manager" default="cr5_robot"/>
   <include file="$(find ruka_moveit_config)/launch/$(arg moveit_controller_manager)_moveit_controller_manager.launch.xml" />
 
 </launch>
