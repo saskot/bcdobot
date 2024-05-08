@@ -243,16 +243,6 @@ int main(int argc, char **argv)
       object_orientation.setRPY(rx, ry, 0);
 
       // Save current object pose
-      single_object_pose.position.x = object_centroid[0];
-      single_object_pose.position.y = object_centroid[1];
-      single_object_pose.position.z = object_centroid[2];
-
-      single_object_pose.orientation.x = object_orientation.getX();
-      single_object_pose.orientation.y = object_orientation.getY();
-      single_object_pose.orientation.z = object_orientation.getZ();
-      single_object_pose.orientation.w = object_orientation.getW();
-
-      object_poses.push_back(single_object_pose);
 
       // Save current object normals
       single_object_normal.x = nx;
@@ -311,7 +301,7 @@ int main(int argc, char **argv)
       tf2::Matrix3x3 R_Obj_Grasp;
       R_Obj_Grasp.setRPY(0.0, 3.14, 0.0);
       tf2::Matrix3x3 R_W_Grasp;
-      R_W_Grasp = R_W_Obj*R_Obj_Grasp;  //  Matrix calibration
+      R_W_Grasp = R_W_Obj*R_Obj_Grasp;  //  Matrix 
       
       tf2::Quaternion quat_w_grasp;
       double roll, pitch, yaw;
@@ -337,7 +327,21 @@ int main(int argc, char **argv)
       marker_pub.publish(marker);
 
       currentClusterNum++;
+
+      single_object_pose.position.x = object_centroid[0] / 1000.0;
+      single_object_pose.position.y = object_centroid[1] / 1000.0;
+      single_object_pose.position.z = object_centroid[2] / 1000.0;
+
+      single_object_pose.orientation.x = quat_w_grasp.getX();
+      single_object_pose.orientation.y = quat_w_grasp.getY();
+      single_object_pose.orientation.z = quat_w_grasp.getZ();
+      single_object_pose.orientation.w = quat_w_grasp.getW();
+
+      object_poses.push_back(single_object_pose);
+
     }
+    ros::Rate rate(10);
+    while(ros::ok){
     geometry_msgs::Point poloha;
     poloha.x = object_poses[max_z_coordinate_object_index].position.x;
     poloha.y = object_poses[max_z_coordinate_object_index].position.y;
@@ -350,7 +354,7 @@ int main(int argc, char **argv)
     geometry_msgs::TransformStamped transformStamped;
 
     transformStamped.header.stamp = ros::Time::now();
-    transformStamped.header.frame_id = "world";
+    transformStamped.header.frame_id = "camera_frame";
     transformStamped.child_frame_id = "object";
     transformStamped.transform.translation.x = object_poses[max_z_coordinate_object_index].position.x;
     transformStamped.transform.translation.y = object_poses[max_z_coordinate_object_index].position.y;
@@ -362,14 +366,16 @@ int main(int argc, char **argv)
     transformStamped.transform.rotation.w = object_poses[max_z_coordinate_object_index].orientation.w;
 
     br.sendTransform(transformStamped);
+    rate.sleep();
+    }
   }
 
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud();
-  pcl::visualization::CloudViewer viewer("Cluster viewer");
-  viewer.showCloud(colored_cloud);
-  while (!viewer.wasStopped())
-  {
-  }
+  // pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud();
+  // pcl::visualization::CloudViewer viewer("Cluster viewer");
+  // viewer.showCloud(colored_cloud);
+  // while (!viewer.wasStopped())
+  // {
+  // }
 
-  return 0;
+  // return 0;
 }

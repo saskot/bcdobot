@@ -12,6 +12,7 @@ add_compile_options(-std=c++14)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  tf2_ros
   geometry_msgs
   message_generation
   rospy
@@ -31,9 +32,8 @@ generate_messages(
 catkin_package(
  # INCLUDE_DIRS include
 #  LIBRARIES wenglor_driver
-  CATKIN_DEPENDS roscpp
+  CATKIN_DEPENDS roscpp tf2_ros message_generation geometry_msgs std_msgs message_runtime
   DEPENDS system_lib
-  CATKIN_DEPENDS message_runtime
 )
 
 include_directories(

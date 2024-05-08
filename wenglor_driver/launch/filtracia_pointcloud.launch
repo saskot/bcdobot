@@ -1,3 +1,5 @@
 <launch>
     <node pkg="wenglor_driver" type="filtracia_pointcloud" name="filtracia_pointcloud" output="screen"/>
+
+    <node pkg="tf" type="static_transform_publisher" name="camera_static_tf" args="0 0 0 0 0 0 1 world camera_frame 10" />
 </launch>
