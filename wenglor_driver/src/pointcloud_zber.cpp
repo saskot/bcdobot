@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 	std::string ip = "192.168.100.1";
 	std::string port = "32001";
 	char readBuffer[0xFFFF];
-	int nrScans = 2;
+	int nrScans = 1;
 
 	//If Ip is passed as argument
 	if (argc == 2) {
@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
 
 
 				//toto som si setol led power
-				command = "SetLedPower=80\r";
+				command = "SetLEDPower=80\r";
 				result = Sensor3D_WriteData(sensorHandle, command.data());
 				if (result != SENSOR3D_OK)
 				{
@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
 				//Acquire Pointclouds
 				for (int i = 0; i < nrScans; i++) {
 					
-					result = Sensor3D_GetPointCloud(sensorHandle, &scanBuffer, pc_size, &number_of_points, &roi, 10000);
+					result = Sensor3D_GetPointCloud(sensorHandle, &scanBuffer, pc_size, &number_of_points, &roi, 50000);
 					if (result != SENSOR3D_OK)
 					{
 						std::cerr << "Error, could not read Pointcloud, result = " << result << std::endl;

@@ -76,15 +76,15 @@ int main(int argc, char **argv)
   pcl::PassThrough<pcl::PointXYZ> pass;
   pass.setInputCloud(cloud);
   pass.setFilterFieldName("x");
-  pass.setFilterLimits(-300, 300);
+  pass.setFilterLimits(-650, 150);
   pass.filter(*cloud);
   writer.write<pcl::PointXYZ>("cropped_x.pcd", *cloud, false);
   pass.setFilterFieldName("y");
-  pass.setFilterLimits(-450, 400);
+  pass.setFilterLimits(-350, 400);
   pass.filter(*cloud);
   writer.write<pcl::PointXYZ>("cropped_xy.pcd", *cloud, false);
   pass.setFilterFieldName("z");
-  pass.setFilterLimits(1900, 1960);
+  pass.setFilterLimits(1900, 1941);
   pass.filter(*cloud);
   writer.write<pcl::PointXYZ>("cropped_xyz.pcd", *cloud, false);
 
