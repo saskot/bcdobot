@@ -76,15 +76,15 @@ int main(int argc, char **argv)
   pcl::PassThrough<pcl::PointXYZ> pass;
   pass.setInputCloud(cloud);
   pass.setFilterFieldName("x");
-  pass.setFilterLimits(-550, 250);
+  pass.setFilterLimits(-300, 300);
   pass.filter(*cloud);
   writer.write<pcl::PointXYZ>("cropped_x.pcd", *cloud, false);
   pass.setFilterFieldName("y");
-  pass.setFilterLimits(-40, 150);
+  pass.setFilterLimits(-450, 400);
   pass.filter(*cloud);
   writer.write<pcl::PointXYZ>("cropped_xy.pcd", *cloud, false);
   pass.setFilterFieldName("z");
-  pass.setFilterLimits(2000, 2142);
+  pass.setFilterLimits(1900, 1960);
   pass.filter(*cloud);
   writer.write<pcl::PointXYZ>("cropped_xyz.pcd", *cloud, false);
 
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
       seg.setOptimizeCoefficients(true);
       seg.setModelType(pcl::SACMODEL_PLANE);
       seg.setMethodType(pcl::SAC_RANSAC);
-      // seg.setMaxIterations(100); //plane_max_iter
+      seg.setMaxIterations(50); //plane_max_iter
       seg.setDistanceThreshold(0.005); //  0.02
 
       seg.setInputCloud(cluster);

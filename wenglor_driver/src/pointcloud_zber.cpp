@@ -20,23 +20,7 @@ int main(int argc, char* argv[]) {
 	std::string ip = "192.168.100.1";
 	std::string port = "32001";
 	char readBuffer[0xFFFF];
-	int nrScans = 20;
-
-	// pcl::PointCloud<pcl::PointXYZ> cloud; 
-
-  	// cloud.width    = 5;
-  	// cloud.height   = 1;
-  	// cloud.is_dense = false;
-  	// cloud.resize (cloud.width * cloud.height);
-
-	// std::cout<<cloud.size()<<std::endl;
-
-	// for (auto& point: cloud)
-  	// {
-   	//  	point.x = 1024 * rand () / (RAND_MAX + 1.0f); // point.x = wenglor_cloud.point[0].x
-    // 	point.y = 1024 * rand () / (RAND_MAX + 1.0f);
-    // 	point.z = 1024 * rand () / (RAND_MAX + 1.0f);
-  	// }
+	int nrScans = 2;
 
 	//If Ip is passed as argument
 	if (argc == 2) {
@@ -113,7 +97,7 @@ int main(int argc, char* argv[]) {
 
 
 				//toto som si setol gain
-				command = "SetGain=60\r";
+				command = "SetGain=0\r";
 				result = Sensor3D_WriteData(sensorHandle, command.data());
 				if (result != SENSOR3D_OK)
 				{
@@ -124,7 +108,7 @@ int main(int argc, char* argv[]) {
 
 
 				//toto som si setol led power
-				command = "SetLedPower=70\r";
+				command = "SetLedPower=80\r";
 				result = Sensor3D_WriteData(sensorHandle, command.data());
 				if (result != SENSOR3D_OK)
 				{
@@ -134,7 +118,7 @@ int main(int argc, char* argv[]) {
 				}
 
 				//toto som si setol exposure time
-				command = "SetExposureTime=50000\r";
+				command = "SetExposureTime=15000\r";
 				result = Sensor3D_WriteData(sensorHandle, command.data());
 				if (result != SENSOR3D_OK)
 				{
@@ -177,15 +161,12 @@ int main(int argc, char* argv[]) {
 				
 
 
-
-
 				ROI roi;
 				int number_of_points = 0;
 				//Acquire Pointclouds
-				nrScans = 3;
 				for (int i = 0; i < nrScans; i++) {
 					
-					result = Sensor3D_GetPointCloud(sensorHandle, &scanBuffer, pc_size, &number_of_points, &roi, 3000);
+					result = Sensor3D_GetPointCloud(sensorHandle, &scanBuffer, pc_size, &number_of_points, &roi, 10000);
 					if (result != SENSOR3D_OK)
 					{
 						std::cerr << "Error, could not read Pointcloud, result = " << result << std::endl;
@@ -207,21 +188,16 @@ int main(int argc, char* argv[]) {
 							
 						int pointIndex = 0;
 						for(int i = 0; i < camera_height * camera_width; i++){
-            				// Assuming scanBuffer contains the point cloud data
             				cloud.points[i].x = scanBuffer.point[i].x;
             				cloud.points[i].y = scanBuffer.point[i].y;
-							//std::cout <<"2 "<<std::endl;
             				cloud.points[i].z = scanBuffer.point[i].z;
-							//std::cout <<"1 "<<std::endl;
    							}
 														
 
 						std::cout <<"3 "<< number_of_points <<std::endl;	
 						pcl::io::savePCDFileASCII ("sken_rovna_plocha.pcd", cloud);
 						std::cerr << "Saved " << cloud.size () << " data points to sken_rovna_plocha.pcd." << std::endl;
-						//for (const auto& point: cloud)
-						//std::cerr << "    " << point.x << " " << point.y << " " << point.z << std::endl;
-                            //}
+
 						std::cout << nrScans << " Scans Acquired!" << std::endl;
 						cleanupAndDisconnect(sensorHandle, scanBuffer);
 
