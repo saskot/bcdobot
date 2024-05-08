@@ -8,7 +8,7 @@
 #include <tf/transform_listener.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <visualization_msgs/Marker.h>
-#include <wenglor_driver/point_array.h>
+
 
 // PCL basic headers
 #include <pcl/io/pcd_io.h>
