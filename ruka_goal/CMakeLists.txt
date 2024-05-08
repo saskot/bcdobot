@@ -31,8 +31,8 @@ include_directories(
 link_directories(${GAZEBO_LIBRARY_DIRS})
 
 catkin_package(
-  INCLUDE_DIRS include/ruka_goal
-  LIBRARIES ruka_goal
+  INCLUDE_DIRS 
+  LIBRARIES 
   CATKIN_DEPENDS
     roscpp
     std_msgs
@@ -47,7 +47,7 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
-add_executable(posli_ruku_niekde /home/alex/catkin_ws/src/ruka_goal/src/posli_ruku_niekde.cpp)
+add_executable(posli_ruku_niekde src/posli_ruku_niekde.cpp)
 
 #add_library(posli_ruku_niekde_lib src/scripts/posli_ruku_niekde.cpp)
 #target_link_libraries(posli_ruku_niekde_lib ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})

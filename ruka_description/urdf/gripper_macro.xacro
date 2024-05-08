@@ -23,7 +23,7 @@
                   xyz="0 0 0"
                   rpy="0 0 0" />
               <geometry>
-                  <mesh scale = "0.001 0.001 0.001" filename="package://ruka_description/meshes/gripper/Gripper_1.4_mod_s_vzduch_pris.STL" /> 
+                  <mesh scale = "0.0001 0.0001 0.0001" filename="package://ruka_description/meshes/gripper/Gripper_1.5REALSTLORIGINALIGNv3.stl" /> 
               </geometry>
               <material name="">
                   <color rgba="0 0 0 1" />
@@ -34,13 +34,13 @@
                   xyz="0 0 0"
                   rpy="0 0 0" />
               <geometry>
-                  <mesh scale = "0.001 0.001 0.001" filename="package://ruka_description/meshes/gripper/Gripper_1.4_mod_s_vzduch_pris.STL" /> 
+                  <mesh scale = "0.0001 0.0001 0.0001" filename="package://ruka_description/meshes/gripper/Gripper_1.5REALSTLORIGINALIGNv3.stl" /> 
               </geometry>
           </collision>
       </link>
 
     <joint name="dobot_gripper_joint" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <origin xyz="0 0 0" rpy="0 0 1.5708"/>
         <parent link="Link6"/>
         <child link="gripper"/>
     </joint>
