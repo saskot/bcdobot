@@ -4,7 +4,7 @@
 <!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
 <!-- =================================================================================== -->
 <robot name="cr5_robot">
-    <link name="dummy_link" />
+    <link name="world" />
     <link name="base_link">
         <inertial>
             <origin rpy="0 0 0" xyz="-8.0961E-06 0.0019103 0.028995" />
@@ -30,7 +30,7 @@
         </collision>
     </link>
     <joint name="dummy_joint" type="fixed">
-        <parent link="dummy_link" />
+        <parent link="world" />
         <child link="base_link" />
     </joint>
     <link name="Link1">

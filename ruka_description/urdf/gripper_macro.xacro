@@ -46,7 +46,7 @@
     </joint>
 
 <joint name="tcp_joint" type="fixed">
-    <origin xyz="-0.105 0 0.065" rpy="0 3.1416 1.5708" /> 
+    <origin xyz="-0.105 0 0.065" rpy="-1.5708 0 1.5708" /> 
     <parent link="gripper" />
     <child link="tcp" />
 </joint>

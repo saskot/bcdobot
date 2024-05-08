@@ -37,27 +37,29 @@
 #include "pcl_ros/transforms.h"
 
 #include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Matrix3x3.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
+
 typedef pcl::PointXYZ PointT;
 typedef pcl::PointCloud<PointT> PointCloudT;
 
-float nx, ny, nz; // Normal vector
 
-std::string world_frame = "base_link";  // Set to your frame ID
-ros::Publisher cloud_pub;
 
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "basic_shapes, pcl_to_ros");
   ros::NodeHandle n;
-  ros::Rate r(1);
+  float nx, ny, nz; // Normal vector
+  std::string world_frame = "base_link";  // Set to your frame ID
 
-  cloud_pub = n.advertise<sensor_msgs::PointCloud2>("output_cloud", 1);
+  // Safety delay
+  ros::Duration(5).sleep();
 
-
-  ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
-
-  ros::Publisher point_pub_msgs = n.advertise<geometry_msgs::Point>("object_pose", 1);
+  ros::Publisher cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/output_cloud", 1);
+  ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("/visualization_marker", 1);
+  ros::Publisher point_pub_msgs = n.advertise<geometry_msgs::Point>("/object_pose", 1);
 
   pcl::PCDWriter writer;
 
@@ -284,7 +286,7 @@ int main(int argc, char **argv)
 
       myQuaternion.normalize();
 
-      marker.header.frame_id = "dummy_link";
+      marker.header.frame_id = world_frame;
       marker.header.stamp = ros::Time::now();
       marker.ns = "basic_shapes";
       marker.id = currentClusterNum + 1;
@@ -304,10 +306,22 @@ int main(int argc, char **argv)
 
       ROS_INFO_STREAM("x: " << myQuaternion.getX() << " y: " << myQuaternion.getY() << " z: " << myQuaternion.getZ() << " w: " << myQuaternion.getW());
 
-      marker.pose.orientation.x = 0.0;
-      marker.pose.orientation.y = 0.0;
-      marker.pose.orientation.z = 0.0;
-      marker.pose.orientation.w = 1.0;
+      // OTOCENIE GRASP FRAME
+      tf2::Matrix3x3 R_W_Obj(myQuaternion);
+      tf2::Matrix3x3 R_Obj_Grasp;
+      R_Obj_Grasp.setRPY(0.0, 3.14, 0.0);
+      tf2::Matrix3x3 R_W_Grasp;
+      R_W_Grasp = R_W_Obj*R_Obj_Grasp;  //  Matrix calibration
+      
+      tf2::Quaternion quat_w_grasp;
+      double roll, pitch, yaw;
+      R_W_Grasp.getRPY(roll, pitch, yaw);
+      quat_w_grasp.setRPY(roll,pitch,yaw);
+
+      marker.pose.orientation.x = quat_w_grasp.getX();
+      marker.pose.orientation.y = quat_w_grasp.getY();
+      marker.pose.orientation.z = quat_w_grasp.getZ();
+      marker.pose.orientation.w = quat_w_grasp.getW();
 
       marker.scale.x = 0.02; // 0.02
       marker.scale.y = 0.02; // 0.02
@@ -322,15 +336,32 @@ int main(int argc, char **argv)
 
       marker_pub.publish(marker);
 
-
       currentClusterNum++;
     }
-      geometry_msgs::Point poloha;
-      poloha.x = object_poses[max_z_coordinate_object_index].position.x;
-      poloha.y = object_poses[max_z_coordinate_object_index].position.y;
-      poloha.z = object_poses[max_z_coordinate_object_index].position.z;
+    geometry_msgs::Point poloha;
+    poloha.x = object_poses[max_z_coordinate_object_index].position.x;
+    poloha.y = object_poses[max_z_coordinate_object_index].position.y;
+    poloha.z = object_poses[max_z_coordinate_object_index].position.z;
     ROS_INFO_STREAM("publishhnute");
     point_pub_msgs.publish(poloha);
+
+    // Tf publish
+    static tf2_ros::TransformBroadcaster br;
+    geometry_msgs::TransformStamped transformStamped;
+
+    transformStamped.header.stamp = ros::Time::now();
+    transformStamped.header.frame_id = "world";
+    transformStamped.child_frame_id = "object";
+    transformStamped.transform.translation.x = object_poses[max_z_coordinate_object_index].position.x;
+    transformStamped.transform.translation.y = object_poses[max_z_coordinate_object_index].position.y;
+    transformStamped.transform.translation.z = object_poses[max_z_coordinate_object_index].position.z;
+
+    transformStamped.transform.rotation.x = object_poses[max_z_coordinate_object_index].orientation.x;
+    transformStamped.transform.rotation.y = object_poses[max_z_coordinate_object_index].orientation.y;
+    transformStamped.transform.rotation.z = object_poses[max_z_coordinate_object_index].orientation.z;
+    transformStamped.transform.rotation.w = object_poses[max_z_coordinate_object_index].orientation.w;
+
+    br.sendTransform(transformStamped);
   }
 
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud();

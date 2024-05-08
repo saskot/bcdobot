@@ -21,7 +21,7 @@ find_package(gazebo 11 REQUIRED)
 find_package(Boost REQUIRED system filesystem date_time thread)
 
 include_directories(
-  include
+  #include
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
   ${GAZEBO_INCLUDE_DIRS}

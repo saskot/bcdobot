@@ -4,7 +4,7 @@
 
 <!--params neviem ci tammaju byt <xacro:include filename = "cr5_robot">-->
   <xacro:macro name="cr5_robot" params="prefix">
-      <link name="${prefix}dummy_link"/>
+      <link name="world"/>
       <link name="${prefix}base_link">
           <inertial>
               <origin
@@ -41,7 +41,7 @@
       </link>
 
       <joint name="${prefix}dummy_joint" type="fixed">
-          <parent link="${prefix}dummy_link" />
+          <parent link="world" />
           <child link="${prefix}base_link" />
       </joint>   
 
