@@ -55,7 +55,7 @@ int main(int argc, char **argv)
   std::string world_frame = "base_link";  // Set to your frame ID
 
   // Safety delay
-  ros::Duration(5).sleep();
+  ros::Duration(15).sleep();
 
   ros::Publisher cloud_pub = n.advertise<sensor_msgs::PointCloud2>("/output_cloud", 1);
   ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("/visualization_marker", 1);
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 
   pcl::PCDWriter writer;
 
-// Read the initial point cloud
+// Read the initial point cloud-------------------------------------------------------------------
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
   pcl::PCDReader reader;
   if (reader.read("sken_rovna_plocha.pcd", *cloud) == -1) {
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
   std::vector<int> indices;
   pcl::removeNaNFromPointCloud(*cloud, *cloud, indices);
 
-  // Crop filter to isolate region of interest
+  // Crop filter to isolate region of interest----------------------------------------------------
   pcl::PassThrough<pcl::PointXYZ> pass;
   pass.setInputCloud(cloud);
   pass.setFilterFieldName("x");
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
   pass.filter(*cloud);
   writer.write<pcl::PointXYZ>("cropped_xyz.pcd", *cloud, false);
 
-  // Voxel Grid Downsampling
+  // Voxel Grid Downsampling--------------------------------------------------------------------------
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_downsampled(new pcl::PointCloud<pcl::PointXYZ>());
   pcl::VoxelGrid<pcl::PointXYZ> sor;
   sor.setInputCloud(cloud);
@@ -98,6 +98,7 @@ int main(int argc, char **argv)
   sor.filter(*cloud_downsampled);
   writer.write<pcl::PointXYZ>("downsampled.pcd", *cloud_downsampled, false);
 
+//-----------------------------------------------------------------
   //Send pointcloud to rviz not viable
     // sensor_msgs::PointCloud2 output;
     // pcl::toROSMsg(*cloud_downsampled, output);
@@ -109,10 +110,10 @@ int main(int argc, char **argv)
     //     ros::spinOnce();
     //     loop_rate.sleep();
     // }
+//----------------------------------------------------------------
 
 
-
-  // Normal estimation
+  // Normal estimation---------------------------------------------------------------------
   pcl::search::Search<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
   pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
   pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normal_estimator;
@@ -121,7 +122,7 @@ int main(int argc, char **argv)
   normal_estimator.setKSearch(50);
   normal_estimator.compute(*normals);
 
-  // Region growing segmentation
+  // Region growing segmentation----------------------------------------------------------------
   pcl::RegionGrowing<pcl::PointXYZ, pcl::Normal> reg;
   reg.setMinClusterSize(700);
   reg.setMaxClusterSize(18000);
@@ -131,14 +132,13 @@ int main(int argc, char **argv)
   reg.setInputNormals(normals);
   reg.setSmoothnessThreshold(2.0 / 180.0 * M_PI);
   reg.setCurvatureThreshold(2.5);
-
-
   std::vector<pcl::PointIndices> clusters;
   reg.extract(clusters);
 
+//-------------------------------------------------------------------------------------------------
   std::cout << "Number of clusters is equal to " << clusters.size() << std::endl;
   std::cout << "First cluster has " << clusters[0].indices.size() << " points." << std::endl;
-
+//---------------------------------------------------------------------------------------------
   if (clusters.size() > 0)
   {
     int currentClusterNum = 1;
@@ -157,7 +157,7 @@ int main(int argc, char **argv)
       std::cout << "Processing cluster n." << currentClusterNum << "..." << std::endl;
       PointCloudT::Ptr cluster(new PointCloudT);
       for (std::vector<int>::const_iterator point = i->indices.begin(); point != i->indices.end(); point++)
-        cluster->points.push_back(cloud_downsampled->points[*point]); // cloud_region_growing
+        cluster->points.push_back(cloud_downsampled->points[*point]); 
       cluster->width = cluster->points.size();
       cluster->height = 1;
       cluster->is_dense = true;
@@ -165,7 +165,7 @@ int main(int argc, char **argv)
       PointCloudT::Ptr cluster_filtered(new PointCloudT);
       PointCloudT::Ptr cluster_plane_raw(new PointCloudT);
 
-      // plane model segmentation
+      // plane model segmentation----------------------------------------------------------
 
       pcl::SACSegmentation<PointT> seg;
       pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
@@ -174,29 +174,29 @@ int main(int argc, char **argv)
       seg.setOptimizeCoefficients(true);
       seg.setModelType(pcl::SACMODEL_PLANE);
       seg.setMethodType(pcl::SAC_RANSAC);
-      seg.setMaxIterations(50); //plane_max_iter
-      seg.setDistanceThreshold(0.005); //  0.02
+      seg.setMaxIterations(50); 
+      seg.setDistanceThreshold(0.005); // 0.02
 
       seg.setInputCloud(cluster);
       seg.segment(*inliers, *coefficients);
  
 
-      // Segment the largest planar komponent from cluster
+      // Segment the largest planar component from cluster-----------------------------------
       seg.setInputCloud(cluster);
       seg.segment(*inliers, *coefficients);
 
-      // Extract the planar inliers from the input cloud
+      // Extract the planar inliers from the input cloud-------------------------------------
       pcl::ExtractIndices<PointT> extract;
       extract.setInputCloud(cluster);
       extract.setIndices(inliers);
       extract.setNegative(false);
 
-      // Get the points associated with the planar surface
+      // Get the points associated with the planar surface----------------------------------
       extract.filter(*cluster_plane_raw);
       std::cout << "Planar cloud size: " << cluster_plane_raw->points.size() << std::endl;
 
-      // Statistical outlier removal
-      //--------------------------------------
+      // Statistical outlier removal ----------------------------------------------------
+    
       PointCloudT::Ptr cluster_plane(new PointCloudT);
       pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
       sor.setInputCloud(cluster_plane_raw);
@@ -206,7 +206,7 @@ int main(int argc, char **argv)
       pcl::PCDWriter writer;
       writer.write<pcl::PointXYZ>("statistic.pcd", *cluster_plane, false);
 
-      //convex hull
+      //convex hull----------------------------------------------------------------------------
 
       PointCloudT::Ptr convexHull(new PointCloudT);
       pcl::ConvexHull<pcl::PointXYZ> hull;
@@ -221,13 +221,15 @@ int main(int argc, char **argv)
       for (int k = 0; k < convexHull->width; k++)
         vertex_index.push_back(k);
 
+
+      //compute centroid and normals ------------------------------------------------------
       pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
       ne.computePointNormal(*convexHull, vertex_index, nx, ny, nz, curvature);
 
       Eigen::Vector4f object_centroid;
       pcl::compute3DCentroid(*cluster_plane, object_centroid);
 
-      //  highest "z" centroid coordinate
+      //  highest z centroid coordinate-------------------------------------------------------
       if (object_centroid[2] > max_z_coordinate)
       {
         max_z_coordinate = object_centroid[2];
@@ -242,9 +244,6 @@ int main(int argc, char **argv)
       tf::Quaternion object_orientation;
       object_orientation.setRPY(rx, ry, 0);
 
-      // Save current object pose
-
-      // Save current object normals
       single_object_normal.x = nx;
       single_object_normal.y = ny;
       single_object_normal.z = nz;
@@ -268,6 +267,8 @@ int main(int argc, char **argv)
 
       std::cout << "--------------------------------------------------" << std::endl;
 
+
+      //vizualization marker ---------------------------------------------------------------
       uint32_t shape = visualization_msgs::Marker::SPHERE;
       visualization_msgs::Marker marker;
       
@@ -287,22 +288,20 @@ int main(int argc, char **argv)
       std::cout << "markerpositionx " << marker.pose.position.x << std::endl;
 
       marker.pose.position.x = object_centroid[0] / 1000.0;
-      marker.pose.position.y = object_centroid[1] / 1000.0; // object_centroid[1]
-      marker.pose.position.z = object_centroid[2] / 1000.0; // object_centroid[2]
-
-      //   marker.pose.position.x = 0;
-      //   marker.pose.position.y = 0;
-      //   marker.pose.position.z = 0;
+      marker.pose.position.y = object_centroid[1] / 1000.0; 
+      marker.pose.position.z = object_centroid[2] / 1000.0; 
 
       ROS_INFO_STREAM("x: " << myQuaternion.getX() << " y: " << myQuaternion.getY() << " z: " << myQuaternion.getZ() << " w: " << myQuaternion.getW());
 
-      // OTOCENIE GRASP FRAME
+      // rotate grasp frame
       tf2::Matrix3x3 R_W_Obj(myQuaternion);
       tf2::Matrix3x3 R_Obj_Grasp;
       R_Obj_Grasp.setRPY(0.0, 3.14, 0.0);
       tf2::Matrix3x3 R_W_Grasp;
-      R_W_Grasp = R_W_Obj*R_Obj_Grasp;  //  Matrix 
-      
+      R_W_Grasp = R_W_Obj*R_Obj_Grasp; //creation of matrix
+      R_Obj_Grasp.setRPY(3.14, 0.0, 0.0);
+      R_W_Grasp = R_W_Grasp*R_Obj_Grasp;
+
       tf2::Quaternion quat_w_grasp;
       double roll, pitch, yaw;
       R_W_Grasp.getRPY(roll, pitch, yaw);
@@ -313,9 +312,9 @@ int main(int argc, char **argv)
       marker.pose.orientation.z = quat_w_grasp.getZ();
       marker.pose.orientation.w = quat_w_grasp.getW();
 
-      marker.scale.x = 0.02; // 0.02
-      marker.scale.y = 0.02; // 0.02
-      marker.scale.z = 0.02; // 0.02
+      marker.scale.x = 0.02; 
+      marker.scale.y = 0.02; 
+      marker.scale.z = 0.02; 
 
       marker.color.r = 0.0f;
       marker.color.g = 0.0f;
@@ -340,6 +339,7 @@ int main(int argc, char **argv)
       object_poses.push_back(single_object_pose);
 
     }
+
     ros::Rate rate(10);
     while(ros::ok){
     geometry_msgs::Point poloha;
@@ -370,12 +370,12 @@ int main(int argc, char **argv)
     }
   }
 
-  // pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud();
-  // pcl::visualization::CloudViewer viewer("Cluster viewer");
-  // viewer.showCloud(colored_cloud);
-  // while (!viewer.wasStopped())
-  // {
-  // }
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud();
+  pcl::visualization::CloudViewer viewer("Cluster viewer");
+  viewer.showCloud(colored_cloud);
+  while (!viewer.wasStopped())
+  {
+  }
 
   // return 0;
 }

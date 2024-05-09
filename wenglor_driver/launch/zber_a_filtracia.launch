@@ -3,8 +3,8 @@
 
     <node pkg="wenglor_driver" type="pointcloud_zber" name="pointcloud_zber" output="screen"/>
 
-    <!-- <node name="listener" pkg="roscpp_tutorials" type="listener" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " /> -->
-    
     <node pkg="wenglor_driver" type="filtracia_pointcloud" name="filtracia_pointcloud" output="screen"/>
+
+    <node pkg="tf" type="static_transform_publisher" name="camera_static_tf" args="0.1023 0.145 1.966 1.57 3.14 0 world camera_frame 10" />
 
 </launch>
