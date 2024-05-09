@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   trajectory_msgs
   visualization_msgs
   tf2
+  dobot_bringup
 )
 find_package(moveit_visual_tools REQUIRED)
 find_package(gazebo 11 REQUIRED)
@@ -44,6 +45,7 @@ catkin_package(
     trajectory_msgs
     visualization_msgs
     tf2
+    dobot_bringup
 #  DEPENDS system_lib
 )
 

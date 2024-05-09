@@ -7,6 +7,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/Twist.h>
+#include <cstdlib>
 //#include "pcl_ros/transforms.h"
 
 int main(int argc, char** argv)
@@ -36,7 +37,7 @@ int main(int argc, char** argv)
   while (ros::ok()) {
     try {
 
-      geometry_msgs::TransformStamped transformStamped = tfBuffer.lookupTransform("camera_frame", "objekt", ros::Time(0));
+      geometry_msgs::TransformStamped transformStamped = tfBuffer.lookupTransform("base_link", "object", ros::Time(0));
       
       moveit::core::RobotStatePtr current_state = move_group_interface.getCurrentState();
       move_group_interface.setStartState(*current_state);
@@ -73,7 +74,7 @@ int main(int argc, char** argv)
       moveit::planning_interface::MoveGroupInterface::Plan plan_to_above30;
       bool success_to_above30 = (move_group_interface.plan(plan_to_above30) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
       if (success_to_above30) {
-        ros::Duration(20).sleep();
+        ros::Duration(5).sleep();
         move_group_interface.move();
       } else {
         ROS_WARN("Failed to plan the motion to the position above the target");
@@ -85,7 +86,7 @@ int main(int argc, char** argv)
       moveit::planning_interface::MoveGroupInterface::Plan plan_to_above20;
       bool success_to_above20 = (move_group_interface.plan(plan_to_above20) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
       if (success_to_above20) {
-        ros::Duration(2).sleep();
+        ros::Duration(5).sleep();
         move_group_interface.move();
       } else {
         ROS_WARN("Failed to plan the motion to the position above the target");
@@ -96,8 +97,9 @@ int main(int argc, char** argv)
       moveit::planning_interface::MoveGroupInterface::Plan plan_to_above;
       bool success_to_above = (move_group_interface.plan(plan_to_above) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
       if (success_to_above) {
-        ros::Duration(20).sleep();
+        ros::Duration(5).sleep();
         move_group_interface.move();
+        system("rosservice call /dobot_bringup/srv/DOExecute 1 1");
       } else {
         ROS_WARN("Failed to plan the motion to the position above the target");
         continue;
@@ -108,7 +110,7 @@ int main(int argc, char** argv)
       moveit::planning_interface::MoveGroupInterface::Plan plan_to_target;
       bool success_to_target = (move_group_interface.plan(plan_to_target) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
       if (success_to_target) {
-        ros::Duration(2).sleep();
+        ros::Duration(5).sleep();
         move_group_interface.move();
       } else {
         ROS_WARN("Failed to plan the motion to the target position");
@@ -121,6 +123,7 @@ int main(int argc, char** argv)
       if (success_to_home) {
         ros::Duration(2).sleep();
         move_group_interface.move();
+        system("rosservice call /dobot_bringup/srv/DOExecute 1 0");
       } else {
         ROS_WARN("Failed to plan the motion to the home position");
       }
