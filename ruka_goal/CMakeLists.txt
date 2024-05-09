@@ -48,7 +48,7 @@ catkin_package(
 )
 
 add_executable(posli_ruku_niekde src/posli_ruku_niekde.cpp)
-
+add_executable(zistenie_poz src/zistenie_poz.cpp)
 #add_library(posli_ruku_niekde_lib src/scripts/posli_ruku_niekde.cpp)
 #target_link_libraries(posli_ruku_niekde_lib ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
@@ -56,6 +56,17 @@ add_executable(posli_ruku_niekde src/posli_ruku_niekde.cpp)
 
 #add_executable(posli_ruku_niekde src/scripts/posli_ruku_niekde.cpp)
 target_link_libraries(posli_ruku_niekde
+                      ${catkin_LIBRARIES}
+                      ${Boost_LIBRARIES}
+                      ${EIGEN3_INCLUDE_DIRS}
+                      ${moveit_visual_tools_LIBRARIES}
+                      ${GAZEBO_LIBRARIES}
+                      #${}
+                      ${moveit_ros_planning_interface}
+                      ${moveit_planning_scene_interface}
+                      )
+
+target_link_libraries(zistenie_poz
                       ${catkin_LIBRARIES}
                       ${Boost_LIBRARIES}
                       ${EIGEN3_INCLUDE_DIRS}

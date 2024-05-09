@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="ruka_goal" type="zistenie_poz" name="zistenie_poz_node" output="screen"/>
+</launch>
+
+
