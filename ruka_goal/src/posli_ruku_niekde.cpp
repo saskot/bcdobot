@@ -7,7 +7,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/Twist.h>
-#include "pcl_ros/transforms.h"
+//#include "pcl_ros/transforms.h"
 
 int main(int argc, char** argv)
 {
@@ -21,8 +21,6 @@ int main(int argc, char** argv)
   tf2_ros::TransformListener tfListener(tfBuffer);
   ros::Rate rate(10.0);
 
-
-
   // Define the planning group
   static const std::string PLANNING_GROUP = "cr5_arm";
   moveit::planning_interface::MoveGroupInterface move_group_interface(PLANNING_GROUP);
@@ -30,10 +28,10 @@ int main(int argc, char** argv)
   // Set the planner and planning time
   move_group_interface.setPlannerId("RRTConnectConfigDefault");
   move_group_interface.setPlanningTime(5.0);
-  move_group_interface.setMaxVelocityScalingFactor(0.05);  // Set speed to 50% of maximum
+  move_group_interface.setMaxVelocityScalingFactor(0.05);
   move_group_interface.setMaxAccelerationScalingFactor(0.05);
 
-  std::vector<double> home_position = {0.0875245, -0.439538, 1.94581, 1.6827, 1.69706, 0.036351};
+  std::vector<double> home_position = {-0.0475316, -0.939539, 1.8619, 2.23235, 1.53372, -0.00715897 };
 
   while (ros::ok()) {
     try {
@@ -43,16 +41,25 @@ int main(int argc, char** argv)
       moveit::core::RobotStatePtr current_state = move_group_interface.getCurrentState();
       move_group_interface.setStartState(*current_state);
 
-
-        geometry_msgs::TransformStamped transformStamped;
-        transformStamped = tfBuffer.lookupTransform("camera_frame", "world",
-                                  ros::Time(0));
       // Define the poses based on the transform
       geometry_msgs::Pose above_target_pose;
       above_target_pose.position.x = transformStamped.transform.translation.x;
       above_target_pose.position.y = transformStamped.transform.translation.y;
-      above_target_pose.position.z = transformStamped.transform.translation.z + 0.15;  // 15 cm above the target
+      above_target_pose.position.z = transformStamped.transform.translation.z + 0.10;  // 15 cm above the target
       above_target_pose.orientation = transformStamped.transform.rotation;
+
+
+      geometry_msgs::Pose above_target_pose20;
+      above_target_pose20.position.x = transformStamped.transform.translation.x;
+      above_target_pose20.position.y = transformStamped.transform.translation.y;
+      above_target_pose20.position.z = transformStamped.transform.translation.z + 0.20;  // 30 cm above the target
+      above_target_pose20.orientation = transformStamped.transform.rotation;
+
+      geometry_msgs::Pose above_target_pose30;
+      above_target_pose30.position.x = transformStamped.transform.translation.x;
+      above_target_pose30.position.y = transformStamped.transform.translation.y;
+      above_target_pose30.position.z = transformStamped.transform.translation.z + 0.30;  // 30 cm above the target
+      above_target_pose30.orientation = transformStamped.transform.rotation;
 
       geometry_msgs::Pose target_pose;
       target_pose.position.x = transformStamped.transform.translation.x;
@@ -60,11 +67,36 @@ int main(int argc, char** argv)
       target_pose.position.z = transformStamped.transform.translation.z;
       target_pose.orientation = transformStamped.transform.rotation;
 
+
       // Move to the position above the target
+      move_group_interface.setPoseTarget(above_target_pose30);
+      moveit::planning_interface::MoveGroupInterface::Plan plan_to_above30;
+      bool success_to_above30 = (move_group_interface.plan(plan_to_above30) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+      if (success_to_above30) {
+        ros::Duration(20).sleep();
+        move_group_interface.move();
+      } else {
+        ROS_WARN("Failed to plan the motion to the position above the target");
+        continue;
+      }
+
+      // Move to the position above the target
+      move_group_interface.setPoseTarget(above_target_pose20);
+      moveit::planning_interface::MoveGroupInterface::Plan plan_to_above20;
+      bool success_to_above20 = (move_group_interface.plan(plan_to_above20) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+      if (success_to_above20) {
+        ros::Duration(2).sleep();
+        move_group_interface.move();
+      } else {
+        ROS_WARN("Failed to plan the motion to the position above the target");
+        continue;
+      }
+
       move_group_interface.setPoseTarget(above_target_pose);
       moveit::planning_interface::MoveGroupInterface::Plan plan_to_above;
       bool success_to_above = (move_group_interface.plan(plan_to_above) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
       if (success_to_above) {
+        ros::Duration(20).sleep();
         move_group_interface.move();
       } else {
         ROS_WARN("Failed to plan the motion to the position above the target");
@@ -76,7 +108,7 @@ int main(int argc, char** argv)
       moveit::planning_interface::MoveGroupInterface::Plan plan_to_target;
       bool success_to_target = (move_group_interface.plan(plan_to_target) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
       if (success_to_target) {
-        ros::Duration(10).sleep();
+        ros::Duration(2).sleep();
         move_group_interface.move();
       } else {
         ROS_WARN("Failed to plan the motion to the target position");
